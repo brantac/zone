@@ -5,6 +5,7 @@ import { TimerType, type Timer } from './core/entities/timer'
 import { StartTimerUseCaseImpl } from './core/usecases/start-timer-usecase-impl'
 import { BrowserTimerService } from './core/services/browser-timer-service'
 import { LocalStorageTimerRepository } from './infrastructure/LocalStorageTimerRepository'
+import StartTimerBtn from './components/StartTimerBtn.vue'
 const timer = ref<Timer>({
   id: '',
   duration: 1500,
@@ -18,9 +19,13 @@ const startTimerUseCase = new StartTimerUseCaseImpl(
   new BrowserTimerService(),
 )
 
-onMounted(async () => {
+// onMounted(async () => {
+//   timer.value = await startTimerUseCase.execute(TimerType.FOCUS, timer)
+// })
+
+async function startTimerOnClick(): Promise<void> {
   timer.value = await startTimerUseCase.execute(TimerType.FOCUS, timer)
-})
+}
 </script>
 
 <template>
@@ -28,6 +33,7 @@ onMounted(async () => {
     <h1>Zone</h1>
     <p>{{ timer?.remaining }}</p>
     <TimerDisplay :timer="timer" />
+    <StartTimerBtn @click="startTimerOnClick" />
   </header>
 </template>
 
