@@ -1,5 +1,5 @@
 <template>
-  <button data-testid="start-timer-btn" @click="$emit('start-timer')">Start</button>
+  <button type="button">Start</button>
 </template>
 
 <script setup lang="ts"></script>
