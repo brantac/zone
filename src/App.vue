@@ -34,7 +34,7 @@ async function startTimerOnClick(): Promise<void> {
   </header>
   <div class="flex flex-col items-center justify-center gap-6 grow">
     <TimerDisplay :timer="timer" class="text-7xl md:text-9xl font-bold text-amber-600" />
-    <StartTimerBtn @click="startTimerOnClick" />
+    <StartTimerBtn @click="startTimerOnClick">start</StartTimerBtn>
   </div>
 </template>
 
