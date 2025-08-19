@@ -1,1 +1,5 @@
 @import 'tailwindcss';
+
+#app {
+  @apply min-h-screen bg-neutral-100 dark:bg-neutral-900 flex flex-col;
+}
