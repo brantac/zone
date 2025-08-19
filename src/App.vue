@@ -29,12 +29,13 @@ async function startTimerOnClick(): Promise<void> {
 </script>
 
 <template>
-  <header>
-    <h1>Zone</h1>
-    <p>{{ timer?.remaining }}</p>
-    <TimerDisplay :timer="timer" />
-    <StartTimerBtn @click="startTimerOnClick" />
+  <header class="p-4 flex flex-row justify-center items-center">
+    <h1 class="text-2xl font-medium text-neutral-950 dark:text-amber-600">pomo</h1>
   </header>
+  <div class="flex flex-col items-center justify-center gap-6 grow">
+    <TimerDisplay :timer="timer" class="text-7xl md:text-9xl font-bold text-amber-600" />
+    <StartTimerBtn @click="startTimerOnClick" />
+  </div>
 </template>
 
 <style scoped></style>
