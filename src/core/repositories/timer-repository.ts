@@ -2,6 +2,6 @@ import type { Timer } from '../entities/timer'
 
 export interface TimerRepository {
   getCurrentTimer(): Timer | null
-  saveTimer(timer: Timer): Timer
-  updateTimer(timer: Timer): Timer
+  saveTimer(timer: Timer): void
+  updateTimer(timer: Timer): void
 }

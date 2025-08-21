@@ -5,11 +5,10 @@ export class LocalStorageTimerRepository implements TimerRepository {
   getCurrentTimer(): Timer | null {
     throw new Error('Method not implemented.')
   }
-  saveTimer(timer: Timer): Timer {
+  saveTimer(timer: Timer): void {
     localStorage.setItem('current_timer', JSON.stringify(timer))
-    return timer
   }
-  updateTimer(timer: Timer): Timer {
+  updateTimer(timer: Timer): void {
     throw new Error('Method not implemented.')
   }
 }
