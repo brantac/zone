@@ -3,8 +3,12 @@ import type { TimerRepository } from '@/core/repositories/timer-repository'
 import { InvalidTimerError } from '@/errors/InvalidTimerError'
 
 export class LocalStorageTimerRepository implements TimerRepository {
-  getCurrentTimer(): Timer | null {
-    throw new Error('Method not implemented.')
+  async getCurrentTimer(): Promise<Timer | null> {
+    let result: Timer | null = null
+    const jsonString = localStorage.getItem('current_timer')
+    if (!jsonString) return result
+    result = await JSON.parse(jsonString)
+    return result
   }
   saveTimer(timer: Timer): void {
     if (

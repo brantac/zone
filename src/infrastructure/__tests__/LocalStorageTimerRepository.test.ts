@@ -72,4 +72,32 @@ describe('LocalStorageTimerRepository', () => {
       expect(() => repository.saveTimer()).toThrow(InvalidTimerError)
     })
   })
+
+  describe('getCurrentTimer', () => {
+    it('should retrieve the current timer from localStorage', async () => {
+      const timer: Timer = {
+        id: '1',
+        duration: 1500,
+        remaining: 1500,
+        isRunning: true,
+        type: TimerType.FOCUS,
+      }
+
+      mockLocalStorage.getItem.mockReturnValueOnce(JSON.stringify(timer))
+
+      const storage = new LocalStorageTimerRepository()
+      const result = await storage.getCurrentTimer()
+
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('current_timer')
+      expect(result).toEqual(timer)
+    })
+
+    it('should retrieve null if current_timer doesnt exist', async () => {
+      const storage = new LocalStorageTimerRepository()
+      const result = await storage.getCurrentTimer()
+
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('current_timer')
+      expect(result).toBeNull()
+    })
+  })
 })
