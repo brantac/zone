@@ -24,6 +24,17 @@ export class LocalStorageTimerRepository implements TimerRepository {
     localStorage.setItem('current_timer', JSON.stringify(timer))
   }
   updateTimer(timer: Timer): void {
-    throw new Error('Method not implemented.')
+    if (
+      timer === undefined ||
+      timer.id === undefined ||
+      timer.duration === undefined ||
+      timer.remaining == undefined ||
+      timer.isRunning === undefined ||
+      timer.type === undefined
+    ) {
+      throw new InvalidTimerError()
+    }
+    localStorage.setItem('current_timer', JSON.stringify(timer))
+    // throw new Error('Method not implemented.')
   }
 }
