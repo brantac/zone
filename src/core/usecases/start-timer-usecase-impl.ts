@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import { isRef, type Ref } from 'vue'
 import { TimerType, type Timer } from '../entities/timer'
 import type { TimerRepository } from '../repositories/timer-repository'
 import type { TimerService } from '../services/timer-service'
@@ -10,14 +10,14 @@ export class StartTimerUseCaseImpl implements StartTimerUseCase {
     private readonly timerService: TimerService,
   ) {}
 
-  execute(timerType: TimerType, timerRef: Ref<Timer>): Timer {
+  async execute(timerType: TimerType, timerRef: Ref<Timer>): Promise<Timer> {
     const duration = timerType === TimerType.FOCUS ? 25 * 60 : 5 * 60
 
-    // const currentTimer = this.timerRepository.getCurrentTimer()
+    const currentTimer = await this.timerRepository.getCurrentTimer()
 
-    // if (currentTimer && currentTimer.isRunning) {
-    //   this.timerService.stopTicking()
-    // }
+    if (currentTimer && currentTimer.isRunning) {
+      this.timerService.stopTicking()
+    }
     // this.timerService.stopTicking()
 
     const timer: Timer = {
@@ -31,10 +31,15 @@ export class StartTimerUseCaseImpl implements StartTimerUseCase {
     this.timerRepository.saveTimer(timer)
 
     this.timerService.startTicking((remaining: number) => {
-      // console.log('Remaining time:', timer.remaining)
       timer.remaining = remaining
+
+      if (remaining <= 0) {
+        timer.isRunning = false
+      }
+
       timerRef.value = { ...timer }
-      // this.timerRepository.updateTimer(timer)
+
+      this.timerRepository.updateTimer(timer)
     }, timer.remaining)
 
     return timer
