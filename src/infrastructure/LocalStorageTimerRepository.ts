@@ -6,8 +6,9 @@ export class LocalStorageTimerRepository implements TimerRepository {
   async getCurrentTimer(): Promise<Timer | null> {
     let result: Timer | null = null
     const jsonString = localStorage.getItem('current_timer')
-    if (!jsonString) return result
-    result = await JSON.parse(jsonString)
+    if (jsonString) {
+      result = await JSON.parse(jsonString)
+    }
     return result
   }
   saveTimer(timer: Timer): void {
