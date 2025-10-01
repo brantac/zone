@@ -10,13 +10,13 @@ import { ref } from 'vue'
 describe('StartTimerUseCase', () => {
   // Arrange
 
-  const mockTimerRepository: TimerRepository = {
+  const mockTimerRepository = {
     getCurrentTimer: vi.fn(),
     saveTimer: vi.fn(),
     updateTimer: vi.fn(),
   }
 
-  const mockTimerService: TimerService = {
+  const mockTimerService = {
     startTicking: vi.fn(),
     stopTicking: vi.fn(),
   }
@@ -26,7 +26,10 @@ describe('StartTimerUseCase', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.clearAllMocks()
-    startTimerUseCase = new StartTimerUseCaseImpl(mockTimerRepository, mockTimerService)
+    startTimerUseCase = new StartTimerUseCaseImpl(
+      mockTimerRepository as TimerRepository,
+      mockTimerService as TimerService,
+    )
   })
 
   afterEach(() => {
@@ -108,5 +111,29 @@ describe('StartTimerUseCase', () => {
     expect(timer.value.id).toBeDefined()
     expect(timer.value.remaining).toBe(1400) // 25 minutes in seconds
     expect(timer.value.isRunning).toBe(true)
+  })
+
+  it('should stop the current timer if there is one running', async () => {
+    // Arrange
+    const timer = ref({
+      id: '',
+      remaining: 1500,
+      duration: 1500,
+      isRunning: false,
+      type: TimerType.FOCUS,
+    })
+    mockTimerRepository.getCurrentTimer.mockResolvedValue({
+      id: 'asfasf',
+      remaining: 1500,
+      duration: 1500,
+      isRunning: true,
+      type: TimerType.FOCUS,
+    })
+
+    // Act
+    await startTimerUseCase.execute(TimerType.FOCUS, timer)
+
+    // Assert
+    expect(mockTimerService.stopTicking).toHaveBeenCalled()
   })
 })
