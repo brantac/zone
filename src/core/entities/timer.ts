@@ -1,6 +1,7 @@
 export enum TimerType {
   FOCUS = 'focus',
-  BREAK = 'break',
+  SHORT_BREAK = 'short_break',
+  LONG_BREAK = 'long_break',
 }
 
 export interface Timer {

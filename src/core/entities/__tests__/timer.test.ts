@@ -25,7 +25,7 @@ describe('Timer', () => {
       duration: 300,
       remaining: 300,
       isRunning: false,
-      type: TimerType.BREAK,
+      type: TimerType.SHORT_BREAK,
     }
 
     expect(timer).toBeDefined()
@@ -33,6 +33,6 @@ describe('Timer', () => {
     expect(timer.duration).toBe(300)
     expect(timer.remaining).toBe(300)
     expect(timer.isRunning).toBe(false)
-    expect(timer.type).toBe(TimerType.BREAK)
+    expect(timer.type).toBe(TimerType.SHORT_BREAK)
   })
 })

@@ -44,7 +44,7 @@ describe('LocalStorageTimerRepository', () => {
         duration: 1500,
         remaining: 400,
         isRunning: false,
-        type: TimerType.BREAK,
+        type: TimerType.SHORT_BREAK,
       }
 
       repository.saveTimer(timer)
