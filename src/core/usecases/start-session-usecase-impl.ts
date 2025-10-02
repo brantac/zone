@@ -2,10 +2,14 @@ import type { Ref } from 'vue'
 import { SessionType, type Session } from '../entities/session'
 import { TimerType, type Timer } from '../entities/timer'
 import type { StartSessionUseCase } from './start-session-usecase'
-import type { StartTimerUseCase } from './start-timer-usecase'
+import type { TimerRepository } from '../repositories/timer-repository'
+import type { TimerService } from '../services/timer-service'
 
 export class StartSessionUseCaseImpl implements StartSessionUseCase {
-  constructor(private startTimerUseCase: StartTimerUseCase) {}
+  constructor(
+    private readonly timerRepository: TimerRepository,
+    private readonly timerService: TimerService,
+  ) {}
 
   async execute(
     sessionType: SessionType,
@@ -21,7 +25,40 @@ export class StartSessionUseCaseImpl implements StartSessionUseCase {
 
     sessionRef.value = newSession
 
-    await this.startTimerUseCase.execute(this.getTimerType(sessionType), timerRef)
+    await this.startTimer(this.getTimerType(sessionType), timerRef)
+  }
+
+  async startTimer(timerType: TimerType, timerRef: Ref<Timer>): Promise<void> {
+    const duration = timerType === TimerType.FOCUS ? 25 * 60 : 5 * 60
+
+    const currentTimer = await this.timerRepository.getCurrentTimer()
+
+    if (currentTimer && currentTimer.isRunning) {
+      this.timerService.stopTicking()
+    }
+    // this.timerService.stopTicking()
+
+    const timer: Timer = {
+      id: generateId(),
+      type: timerType,
+      duration: duration,
+      remaining: duration,
+      isRunning: true,
+    }
+
+    this.timerRepository.saveTimer(timer)
+
+    this.timerService.startTicking((remaining: number) => {
+      timer.remaining = remaining
+
+      if (remaining <= 0) {
+        timer.isRunning = false
+      }
+
+      timerRef.value = { ...timer }
+
+      this.timerRepository.updateTimer(timer)
+    }, timer.remaining)
   }
 
   private getTimerType(sessionType: SessionType): TimerType {
