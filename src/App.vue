@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import TimerDisplay from './components/TimerDisplay.vue'
 import { TimerType, type Timer } from './core/entities/timer'
-import { StartTimerUseCaseImpl } from './core/usecases/start-timer-usecase-impl'
 import { BrowserTimerService } from './core/services/browser-timer-service'
 import { LocalStorageTimerRepository } from './infrastructure/LocalStorageTimerRepository'
 import StartTimerBtn from './components/StartTimerBtn.vue'
+import { StartSessionUseCaseImpl } from './core/usecases/start-session-usecase-impl'
+import { type Session, SessionType } from './core/entities/session'
 const timer = ref<Timer>({
   id: '',
   duration: 1500,
@@ -13,18 +14,15 @@ const timer = ref<Timer>({
   isRunning: false,
   type: TimerType.FOCUS,
 })
+const sessionRef = ref<Session>({} as Session)
 
-const startTimerUseCase = new StartTimerUseCaseImpl(
+const startSessionUseCase = new StartSessionUseCaseImpl(
   new LocalStorageTimerRepository(),
   new BrowserTimerService(),
 )
 
-// onMounted(async () => {
-//   timer.value = await startTimerUseCase.execute(TimerType.FOCUS, timer)
-// })
-
 async function startTimerOnClick(): Promise<void> {
-  timer.value = await startTimerUseCase.execute(TimerType.FOCUS, timer)
+  await startSessionUseCase.execute(SessionType.FOCUS, sessionRef, timer)
 }
 </script>
 
