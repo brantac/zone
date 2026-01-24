@@ -7,7 +7,7 @@ import { beforeEach } from 'vitest'
 import type { TimerRepository } from '@/core/repositories/timer-repository'
 import type { TimerService } from '@/core/services/timer-service'
 
-describe('Session', () => {
+describe('StartSessionUseCase', () => {
   const timerService = {
     startTicking: vi.fn(),
     stopTicking: vi.fn(),
@@ -34,8 +34,9 @@ describe('Session', () => {
     vi.restoreAllMocks()
   })
 
-  it('should create a session and start a timer', async () => {
+  it('should start a session', async () => {
     // Arrange
+    const handleSessionComplete = vi.fn()
     const timerRef = ref<Timer>({
       id: '',
       duration: 1500,
@@ -43,7 +44,12 @@ describe('Session', () => {
       isRunning: false,
       type: TimerType.FOCUS,
     })
-    const sessionRef = ref<Session>({} as Session)
+    const sessionRef = ref<Session>({
+      id: '',
+      sessionType: SessionType.FOCUS,
+      startTime: 0,
+      isCompleted: false,
+    })
     let tickCallback: (remaining: number) => void
     ;(
       timerService.startTicking as MockedFunction<(callback: (remaining: number) => void) => void>
@@ -52,7 +58,12 @@ describe('Session', () => {
     })
 
     // Act
-    await startSessionUseCase.execute(SessionType.FOCUS, sessionRef, timerRef)
+    await startSessionUseCase.execute(
+      SessionType.FOCUS,
+      sessionRef,
+      timerRef,
+      handleSessionComplete,
+    )
 
     // Assert
     expect(sessionRef.value).toBeDefined()
@@ -61,15 +72,6 @@ describe('Session', () => {
     expect(sessionRef.value.isCompleted).toBe(false)
     expect(sessionRef.value.sessionType).toBe(SessionType.FOCUS)
 
-    // Verify timer started
-    expect(timerRepository.getCurrentTimer).toHaveBeenCalled()
-    expect(timerRepository.saveTimer).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: TimerType.FOCUS,
-        remaining: 1500,
-        isRunning: true,
-      }),
-    )
     expect(timerService.startTicking).toHaveBeenCalledWith(expect.any(Function), 1500)
 
     // Simulate timer ticks
@@ -89,6 +91,7 @@ describe('Session', () => {
 
   it('should stop the current timer if there is one running', async () => {
     // Arrange
+    const handleSessionComplete = vi.fn()
     const sessionRef = ref<Session>({} as Session)
     const timer = ref({
       id: '',
@@ -106,13 +109,13 @@ describe('Session', () => {
     })
 
     // Act
-    await startSessionUseCase.execute(SessionType.FOCUS, sessionRef, timer)
+    await startSessionUseCase.execute(SessionType.FOCUS, sessionRef, timer, handleSessionComplete)
 
     // Assert
     expect(timerService.stopTicking).toHaveBeenCalled()
   })
 
-  it('timer should stop running if it reaches zero', async () => {
+  it('focus session should end when timer reaches zero', async () => {
     // Arrange
     const sessionRef = ref<Session>({} as Session)
     const timer = ref({
@@ -122,6 +125,10 @@ describe('Session', () => {
       isRunning: false,
       type: TimerType.FOCUS,
     })
+    const handleSessionComplete = vi.fn().mockImplementation(() => {
+      sessionRef.value.isCompleted = true
+      sessionRef.value.endTime = Date.now()
+    })
     let tickCallback: (remaining: number) => void
     ;(
       timerService.startTicking as MockedFunction<(callback: (remaining: number) => void) => void>
@@ -130,7 +137,7 @@ describe('Session', () => {
     })
 
     // Act
-    await startSessionUseCase.execute(SessionType.FOCUS, sessionRef, timer)
+    await startSessionUseCase.execute(SessionType.FOCUS, sessionRef, timer, handleSessionComplete)
 
     // Assert
     tickCallback!(0)
@@ -139,6 +146,18 @@ describe('Session', () => {
         remaining: 0,
         type: TimerType.FOCUS,
         isRunning: false,
+      }),
+    )
+    expect(timer.value).toEqual(
+      expect.objectContaining({
+        remaining: 0,
+        isRunning: false,
+      }),
+    )
+    expect(sessionRef.value).toEqual(
+      expect.objectContaining({
+        isCompleted: true,
+        endTime: expect.any(Number),
       }),
     )
   })

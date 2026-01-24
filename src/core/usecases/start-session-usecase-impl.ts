@@ -15,20 +15,17 @@ export class StartSessionUseCaseImpl implements StartSessionUseCase {
     sessionType: SessionType,
     sessionRef: Ref<Session>,
     timerRef: Ref<Timer>,
+    onComplete: () => Promise<void> | void,
   ): Promise<void> {
-    const newSession: Session = {
-      id: generateId(),
-      startTime: Date.now(),
-      isCompleted: false,
-      sessionType,
-    }
-
-    sessionRef.value = newSession
-
-    await this.startTimer(this.getTimerType(sessionType), timerRef)
+    sessionRef.value.id = generateId()
+    sessionRef.value.startTime = Date.now()
+    await this.startTimer(this.getTimerType(sessionType), timerRef, onComplete)
   }
-
-  async startTimer(timerType: TimerType, timerRef: Ref<Timer>): Promise<void> {
+  async startTimer(
+    timerType: TimerType,
+    timerRef: Ref<Timer>,
+    onComplete: () => Promise<void> | void,
+  ): Promise<void> {
     const duration = timerType === TimerType.FOCUS ? 25 * 60 : 5 * 60
 
     const currentTimer = await this.timerRepository.getCurrentTimer()
@@ -53,6 +50,7 @@ export class StartSessionUseCaseImpl implements StartSessionUseCase {
 
       if (remaining <= 0) {
         timer.isRunning = false
+        onComplete()
       }
 
       timerRef.value = { ...timer }

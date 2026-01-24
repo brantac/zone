@@ -20,9 +20,14 @@ const startSessionUseCase = new StartSessionUseCaseImpl(
   new LocalStorageTimerRepository(),
   new BrowserTimerService(),
 )
+const handleSessionComplete = async () => {
+  // Mark session as completed
+  sessionRef.value.endTime = Date.now()
+  sessionRef.value.isCompleted = true
+}
 
 async function startTimerOnClick(): Promise<void> {
-  await startSessionUseCase.execute(SessionType.FOCUS, sessionRef, timer)
+  await startSessionUseCase.execute(SessionType.FOCUS, sessionRef, timer, handleSessionComplete)
 }
 </script>
 
