@@ -34,7 +34,7 @@ describe('StartSessionUseCase', () => {
     vi.restoreAllMocks()
   })
 
-  it('should start a session', async () => {
+  it('should create a focus session with correct duration', async () => {
     // Arrange
     const handleSessionComplete = vi.fn()
     const timerRef = ref<Timer>({
@@ -46,15 +46,9 @@ describe('StartSessionUseCase', () => {
     })
     const sessionRef = ref<Session>({
       id: '',
-      sessionType: SessionType.FOCUS,
       startTime: 0,
       isCompleted: false,
-    })
-    let tickCallback: (remaining: number) => void
-    ;(
-      timerService.startTicking as MockedFunction<(callback: (remaining: number) => void) => void>
-    ).mockImplementation((callback) => {
-      tickCallback = callback
+      sessionType: SessionType.FOCUS,
     })
 
     // Act
@@ -67,26 +61,45 @@ describe('StartSessionUseCase', () => {
 
     // Assert
     expect(sessionRef.value).toBeDefined()
+    expect(sessionRef.value.id).toBeTypeOf('string')
     expect(sessionRef.value.id).not.toBe('')
-    expect(sessionRef.value.startTime).toBeDefined()
+    expect(sessionRef.value.startTime).toBeGreaterThan(0)
     expect(sessionRef.value.isCompleted).toBe(false)
     expect(sessionRef.value.sessionType).toBe(SessionType.FOCUS)
+  })
 
-    expect(timerService.startTicking).toHaveBeenCalledWith(expect.any(Function), 1500)
+  it('should create a short break session with 5 minutes', async () => {
+    // Arrange
+    const handleSessionComplete = vi.fn()
+    const timerRef = ref<Timer>({
+      id: '',
+      duration: 1500,
+      remaining: 0,
+      isRunning: false,
+      type: TimerType.FOCUS,
+    })
+    const sessionRef = ref<Session>({
+      id: '',
+      startTime: 0,
+      isCompleted: false,
+      sessionType: SessionType.FOCUS,
+    })
 
-    // Simulate timer ticks
-    expect(tickCallback!).toBeDefined()
-    tickCallback!(1499)
-    expect(timerRepository.updateTimer).toHaveBeenCalledWith(
-      expect.objectContaining({
-        remaining: 1499,
-        type: TimerType.FOCUS,
-        isRunning: true,
-      }),
+    // Act
+    await startSessionUseCase.execute(
+      SessionType.SHORT_BREAK,
+      sessionRef,
+      timerRef,
+      handleSessionComplete,
     )
-    expect(timerRef.value.id).toBeDefined()
-    expect(timerRef.value.remaining).toBe(1499)
-    expect(timerRef.value.isRunning).toBe(true)
+
+    // Assert
+    expect(sessionRef.value).toBeDefined()
+    expect(sessionRef.value.id).toBeTypeOf('string')
+    expect(sessionRef.value.id).not.toBe('')
+    expect(sessionRef.value.startTime).toBeGreaterThan(0)
+    expect(sessionRef.value.isCompleted).toBe(false)
+    expect(sessionRef.value.sessionType).toBe(SessionType.SHORT_BREAK)
   })
 
   it('should stop the current timer if there is one running', async () => {

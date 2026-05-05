@@ -19,13 +19,10 @@ export class StartSessionUseCaseImpl implements StartSessionUseCase {
   ): Promise<void> {
     sessionRef.value.id = generateId()
     sessionRef.value.startTime = Date.now()
-    await this.startTimer(this.getTimerType(sessionType), timerRef, onComplete)
-  }
-  async startTimer(
-    timerType: TimerType,
-    timerRef: Ref<Timer>,
-    onComplete: () => Promise<void> | void,
-  ): Promise<void> {
+    sessionRef.value.sessionType = sessionType
+    // await this.startTimer(this.getTimerType(sessionType), timerRef, onComplete)
+    // Important: startTimer method logic should be inside this.execute() method
+    const timerType = this.getTimerType(sessionType)
     const duration = timerType === TimerType.FOCUS ? 25 * 60 : 5 * 60
 
     const currentTimer = await this.timerRepository.getCurrentTimer()
