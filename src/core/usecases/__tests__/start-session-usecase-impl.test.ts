@@ -18,16 +18,7 @@ describe('StartSessionUseCase', () => {
       ...overrides,
     }
   }
-  // const createTimer = (timerType: TimerType = TimerType.SHORT_BREAK) => {
-  //   const timer: Timer = {
-  //     id: '',
-  //     duration: 1500,
-  //     remaining: 1500,
-  //     isRunning: false,
-  //     type: timerType,
-  //   }
-  //   return timer
-  // }
+
   const createSession = (overrides?: Partial<Session>): Session => {
     return {
       id: '',
@@ -37,15 +28,7 @@ describe('StartSessionUseCase', () => {
       ...overrides,
     }
   }
-  // const createSession = (sessionType: SessionType = SessionType.SHORT_BREAK) => {
-  //   const session: Session = {
-  //     id: '',
-  //     startTime: new Date().getTime(),
-  //     isCompleted: false,
-  //     sessionType: sessionType,
-  //   }
-  //   return session
-  // }
+
   const timerService = {
     startTicking: vi.fn(),
     stopTicking: vi.fn(),
