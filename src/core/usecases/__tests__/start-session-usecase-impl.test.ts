@@ -1,34 +1,14 @@
 import { afterEach, describe, expect, it, vi, type MockedFunction } from 'vitest'
 import { StartSessionUseCaseImpl } from '@/core/usecases/start-session-usecase-impl'
-import { ref, type Ref } from 'vue'
-import { TimerType, type Timer } from '@/core/entities/timer'
-import { SessionType, type Session } from '@/core/entities/session'
+import { TimerType } from '@/core/entities/timer'
+import { SessionType } from '@/core/entities/session'
 import { beforeEach } from 'vitest'
 import type { TimerRepository } from '@/core/repositories/timer-repository'
 import type { TimerService } from '@/core/services/timer-service'
+import { createTimer } from '@/composables/create-timer'
+import { createSession } from '@/composables/create-session'
 
 describe('StartSessionUseCase', () => {
-  const createTimer = (overrides?: Partial<Timer>): Timer => {
-    return {
-      id: '',
-      duration: 1500,
-      remaining: 1500,
-      isRunning: false,
-      type: TimerType.SHORT_BREAK,
-      ...overrides,
-    }
-  }
-
-  const createSession = (overrides?: Partial<Session>): Session => {
-    return {
-      id: '',
-      startTime: new Date().getTime(),
-      isCompleted: false,
-      sessionType: SessionType.SHORT_BREAK,
-      ...overrides,
-    }
-  }
-
   const timerService = {
     startTicking: vi.fn(),
     stopTicking: vi.fn(),
@@ -58,16 +38,14 @@ describe('StartSessionUseCase', () => {
   it('should create a focus session with correct duration', async () => {
     // Arrange
     const handleSessionComplete = vi.fn()
-    const sessionRef = ref<Session | null>(null)
-    const timerRef = ref<Timer | null>(null)
-    timerRef.value = createTimer({ type: TimerType.FOCUS })
-    sessionRef.value = createSession({ sessionType: SessionType.FOCUS })
+    const sessionRef = createSession({ sessionType: SessionType.FOCUS })
+    const timerRef = createTimer({ type: TimerType.FOCUS })
 
     // Act
     await startSessionUseCase.execute(
       SessionType.FOCUS,
-      sessionRef as Ref<Session>,
-      timerRef as Ref<Timer>,
+      sessionRef,
+      timerRef,
       handleSessionComplete,
     )
 
@@ -83,17 +61,15 @@ describe('StartSessionUseCase', () => {
   it('should create a short break session with 5 minutes', async () => {
     // Arrange
     const handleSessionComplete = vi.fn()
-    const timerRef = ref<Timer | null>(null)
-    const sessionRef = ref<Session | null>(null)
-    timerRef.value = createTimer()
-    sessionRef.value = createSession()
+    const sessionRef = createSession({ sessionType: SessionType.FOCUS })
+    const timerRef = createTimer({ type: TimerType.SHORT_BREAK })
 
     // Act
     if (sessionRef.value !== null && timerRef.value !== null) {
       await startSessionUseCase.execute(
         SessionType.SHORT_BREAK,
-        sessionRef as Ref<Session>,
-        timerRef as Ref<Timer>,
+        sessionRef,
+        timerRef,
         handleSessionComplete,
       )
     }
@@ -117,10 +93,8 @@ describe('StartSessionUseCase', () => {
     // TO-DO: Use the createTimer and createSession functions
     // Arrange
     const handleSessionComplete = vi.fn()
-    const sessionRef = ref<Session | null>(null)
-    const timerRef = ref<Timer | null>(null)
-    timerRef.value = createTimer()
-    sessionRef.value = createSession()
+    const sessionRef = createSession({ sessionType: SessionType.FOCUS })
+    const timerRef = createTimer({ type: TimerType.FOCUS })
     timerRepository.getCurrentTimer.mockResolvedValue({
       id: 'asfasf',
       remaining: 1500,
@@ -132,8 +106,8 @@ describe('StartSessionUseCase', () => {
     // Act
     await startSessionUseCase.execute(
       SessionType.FOCUS,
-      sessionRef as Ref<Session>,
-      timerRef as Ref<Timer>,
+      sessionRef,
+      timerRef,
       handleSessionComplete,
     )
 
@@ -143,10 +117,8 @@ describe('StartSessionUseCase', () => {
 
   it('focus session should end when timer reaches zero', async () => {
     // Arrange
-    const sessionRef = ref<Session | null>(null)
-    const timerRef = ref<Timer | null>(null)
-    timerRef.value = createTimer({ type: TimerType.FOCUS })
-    sessionRef.value = createSession({ sessionType: SessionType.FOCUS })
+    const sessionRef = createSession({ sessionType: SessionType.FOCUS })
+    const timerRef = createTimer({ type: TimerType.FOCUS })
 
     const handleSessionComplete = vi.fn().mockImplementation(() => {
       if (sessionRef.value) {
@@ -164,8 +136,8 @@ describe('StartSessionUseCase', () => {
     // Act
     await startSessionUseCase.execute(
       SessionType.FOCUS,
-      sessionRef as Ref<Session>,
-      timerRef as Ref<Timer>,
+      sessionRef,
+      timerRef,
       handleSessionComplete,
     )
 
