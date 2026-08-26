@@ -1,20 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import TimerDisplay from './components/TimerDisplay.vue'
-import { TimerType, type Timer } from './core/entities/timer'
 import { BrowserTimerService } from './core/services/browser-timer-service'
 import { LocalStorageTimerRepository } from './infrastructure/LocalStorageTimerRepository'
 import StartTimerBtn from './components/StartTimerBtn.vue'
 import { StartSessionUseCaseImpl } from './core/usecases/start-session-usecase-impl'
-import { type Session, SessionType } from './core/entities/session'
-const timer = ref<Timer>({
-  id: '',
-  duration: 1500,
-  remaining: 1500,
-  isRunning: false,
-  type: TimerType.FOCUS,
-})
-const sessionRef = ref<Session>({} as Session)
+import { SessionType } from './core/entities/session'
+import { useTimerState } from './composables/useTimerState.ts'
+const { timer, session } = useTimerState()
 
 const startSessionUseCase = new StartSessionUseCaseImpl(
   new LocalStorageTimerRepository(),
@@ -22,12 +14,12 @@ const startSessionUseCase = new StartSessionUseCaseImpl(
 )
 const handleSessionComplete = async () => {
   // Mark session as completed
-  sessionRef.value.endTime = Date.now()
-  sessionRef.value.isCompleted = true
+  session.value.endTime = Date.now()
+  session.value.isCompleted = true
 }
 
 async function startTimerOnClick(): Promise<void> {
-  await startSessionUseCase.execute(SessionType.FOCUS, sessionRef, timer, handleSessionComplete)
+  await startSessionUseCase.execute(SessionType.FOCUS, session, timer, handleSessionComplete)
 }
 </script>
 
