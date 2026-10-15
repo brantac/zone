@@ -9,7 +9,7 @@ export interface SessionManagerReturn {
   currentTimer: Ref<Timer>
   currentSession: Ref<Session>
   completedSessions: SessionType[]
-  startSession: () => void
+  startSession: () => Promise<void>
 }
 
 export function useSessionManager(startSessionUseCase: StartSessionUseCase): SessionManagerReturn {
@@ -28,9 +28,9 @@ export function useSessionManager(startSessionUseCase: StartSessionUseCase): Ses
   const getNextSessionType = (): SessionType => {
     const completedSessionsCount = completedSessions.length
 
-    if (completedSessionsCount === 0) return SessionType.FOCUS
-
-    if (completedSessionsCount > 0 && completedSessionsCount % 4 === 3) {
+    if (completedSessionsCount === 0) {
+      return SessionType.FOCUS
+    } else if (completedSessionsCount > 0 && completedSessionsCount % 4 === 3) {
       return SessionType.LONG_BREAK
     } else if (completedSessionsCount % 4 === 1) {
       return SessionType.SHORT_BREAK
